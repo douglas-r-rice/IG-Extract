@@ -1,8 +1,9 @@
 # igextract
 This repository contains the following:\
 (1) fpc_files directory: this contains coded Food Policy Council documents in a format appropriate for our analysis.\
-(2) BERT_Embeddings.ipynb: this contains the code to obtain the word embeddings from BERT for all the data in the fpc_files folder. \
-(3) DeepLearner_with_BERT.r: modified version of dr_DeepLearner.r that incorporates the embeddings for analyses.
+(2) fpc_all.csv: all the files in the fpc_files directory concatenated into one single file. \
+(3) BERT_Embeddings.ipynb: this contains the code to obtain the word embeddings from BERT for all the data in the fpc_files folder. \
+(4) DeepLearner_with_BERT.r: modified version of dr_DeepLearner.r that incorporates the embeddings for analyses.
 
 
 ## Software Installation for Deep Learning
@@ -13,7 +14,7 @@ Please refer to this [article](https://medium.com/@margaretmz/anaconda-jupyter-n
 
 ### Hugging Face Transformers Installation
 The first step to installing the Hugging Face library is to ensure that you have Tensorflow 2.0 and/or PyTorch installed. You can install Pytorch via Anaconda. 
-Visit [PyTorch](https://pytorch.org/get-started/locally/#mac-anaconda). Run the command presented to you in the Anaconda prompt after selecting the appropriate configuration options. 
+Visit [this](https://pytorch.org/get-started/locally/#mac-anaconda) website. Run the command presented to you in the Anaconda prompt after selecting the appropriate configuration options. 
 
 You can install Transformers in two ways: (1) [with pip](https://huggingface.co/transformers/installation.html#installation-with-pip) or (2) [from source](https://huggingface.co/transformers/installation.html#installing-from-source). The [Transformers documentation](https://huggingface.co/transformers/) is a good resource for getting started and a good reference for Transformers' built-in features.
 
