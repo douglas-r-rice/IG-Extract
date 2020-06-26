@@ -8,20 +8,27 @@ This repository contains the following:\
 ## Installing Keras for R
 To run the code, you'll need to setup [Keras](https://keras.rstudio.com/) in RStudio. 
 
-To install the Keras R package from GitHub, execute the following commands:
+To install the Keras R package from GitHub and get analysis up, execute the following commands:
 ```
-install.packages("devtools")
+# necessary packages
+install.packages( c("devtools", "cleanNLP", "rJava", "plyr", "dplyr", "magrittr", "readxl", "stringr", "readr", "glue", "e1071", "forcats", "tidyverse", "fastDummies", "caret", "purrr", "xgboost"))
 devtools::install_github("rstudio/keras")
 
 library(keras)
-```
 
-Next, you should install Keras with TensorFlow backend by running the following line in the R terminal: 
-```
+#install Keras with TensorFlow backend
 install_keras()
 ```
 
-## Other Instructions
-* Install any other necessary packages.
-* Change the file path if applicable.
-* Run the R code and get your result displayed.
+The you can run the analysis
+```
+source('dr_DeepLearner.r')
+```
+
+If it works you should see output ending like this, the accuracy of a neural network set to predict the IG labels of each word:
+```
+Accuracy with neural network  71.909
+Accuracy with xgboost using class probabilities  73.102
+Accuracy with neural network  72.936
+Accuracy with xgboost using class probabilities  74.019
+```
