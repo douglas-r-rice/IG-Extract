@@ -23,14 +23,14 @@ library(xgboost)
 library(keras)
 
 # set working directory to your computers
-setwd("C:/Users/Jiemin/Downloads/self_gov/Data_2/Data")
+setwd(".")
 
 # load BERT embeddings
-emb_path = "C:/Users/Jiemin/Downloads/self_gov/feature_embeddings.csv"
+emb_path = "feature_embeddings.csv"
 emb_df <- read.csv(emb_path)
 
 # read in some sample data
-path = "C:/Users/Jiemin/Downloads/self_gov/Data_2/Data/fpc_files/fpc_{i}_with_code.csv"
+path = "fpc_files/fpc_{i}_with_code.csv"
 
 fpc1 <- data.frame()
 for (i in 1:19) {
