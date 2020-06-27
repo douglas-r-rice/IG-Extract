@@ -36,5 +36,8 @@ Visit [this](https://pytorch.org/get-started/locally/#mac-anaconda) website. Run
 You can install Transformers in two ways: (1) [with pip](https://huggingface.co/transformers/installation.html#installation-with-pip) or (2) [from source](https://huggingface.co/transformers/installation.html#installing-from-source). The [Transformers documentation](https://huggingface.co/transformers/) is a good resource for getting started and a good reference for Transformers' built-in features.
 
 ## Instructions
+* Clone the project repo from GitLab with ```git clone```. In this case, run 
+```git clone https://gitlab.com/c2lab1/freygroup/igextract.git```
+Now you have a local copy of the repo on your computer. You can use ```git pull``` to download changes from the remote repo to your local repo.
 * Run the file BERT_Embeddings.py to obtain the feature_embeddings.csv that will be used in DeepLearner_with_BERT.r.
 * Then run the analysis ```source('DeepLearner_with_BERT.r')```.
