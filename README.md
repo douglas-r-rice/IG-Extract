@@ -10,17 +10,17 @@ To run the code, you'll need to setup [Keras](https://keras.rstudio.com/) in RSt
 
 To install the Keras R package from GitHub and get analysis up, execute the following commands:
 ```
-# necessary packages
+# install necessary packages
 install.packages( c("devtools", "cleanNLP", "rJava", "plyr", "dplyr", "magrittr", "readxl", "stringr", "readr", "glue", "e1071", "forcats", "tidyverse", "fastDummies", "caret", "purrr", "xgboost"))
 devtools::install_github("rstudio/keras")
 
 library(keras)
 
-#install Keras with TensorFlow backend
+# install Keras with TensorFlow backend
 install_keras()
 ```
 
-The you can run the analysis
+Then you can run the analysis
 ```
 source('dr_DeepLearner.r')
 ```
