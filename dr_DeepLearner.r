@@ -22,11 +22,11 @@ library(purrr)
 library(xgboost)
 library(keras)
 
-# set working directory to your computers
-setwd("C:/Users/drrice/dropbox/ig extract/coding/r code/dr/")
+# set working directory to parent of fpc_files
+#setwd(".")
 
 # read in some sample data
-path = "c:/users/drrice/dropbox/ig extract/coding/r code/dr/fpc_files/fpc_{i}_with_code.csv"
+path = "fpc_files/fpc_{i}_with_code.csv"
 
 fpc1 <- data.frame()
 for (i in 1:19) {
@@ -38,6 +38,8 @@ fpc1$new_relations <- as.factor(fpc1$relation)
 fpc1$new_word <- as.factor(fpc1$word)
 fpc1$new_pos <- as.factor(fpc1$pos)
 fpc1$new_source <- as.factor(fpc1$word_source)
+
+fpc1$CodeType <- as.factor(fpc1$CodeType)
 
 fpc1$id <- NULL
 fpc1$sid <- NULL
