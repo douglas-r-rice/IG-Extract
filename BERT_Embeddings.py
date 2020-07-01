@@ -4,9 +4,11 @@ import numpy as np
 from transformers import BertTokenizer, BertModel
 from keras.preprocessing.sequence import pad_sequences
 import torch
+import glob
 
-# load data
-data = pd.read_csv("fpc_all.csv")
+# concatenate all the fpc files into one dataframe
+all_files = [pd.read_csv(file, header = 0) for file in glob.glob(r'fpc_files' + "/*.csv")]
+data = pd.concat(all_files, axis = 0, ignore_index = True)
 
 # load pre-trained model and tokenizer
 tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
@@ -46,5 +48,4 @@ features_df.to_csv("feature_embeddings.csv", encoding='utf-8', index = False)
 
 
 # Notes:
-# * To concatenate all the fpc files into one dataframe, check out this [thread](https://stackoverflow.com/questions/20906474/import-multiple-csv-files-into-pandas-and-concatenate-into-one-dataframe) on Stack Overflow.
 # * An alternative to using the ```get_ids_masks``` function to get the input_ids and attention_masks is to use ```tokenizer.encode_plus```. The function has the ability to do everything listed in the ```get_ids_masks``` function. Check out the [documentation](https://huggingface.co/transformers/main_classes/tokenizer.html?highlight=encode_plus#transformers.PreTrainedTokenizer.encode_plus).
