@@ -5,14 +5,20 @@ from transformers import BertTokenizer, BertModel
 from keras.preprocessing.sequence import pad_sequences
 import torch
 import glob
+import natsort
 
 # concatenate all the fpc files into one dataframe
-all_files = [pd.read_csv(file, header = 0) for file in glob.glob(r'fpc_files' + "/*.csv")]
-data = pd.concat(all_files, axis = 0, ignore_index = True)
+f = glob.glob('fpc_files/*.csv')
+sortedfiles = natsort.natsorted(f, reverse = False)
+
+df = pd.DataFrame()
+for files in sortedfiles:
+    df = df.append(pd.read_csv(files))
 
 # load pre-trained model and tokenizer
-tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-model = BertModel.from_pretrained('bert-base-uncased')
+pretrained_weights = 'bert-base-uncased'
+tokenizer = BertTokenizer.from_pretrained(pretrained_weights)
+model = BertModel.from_pretrained(pretrained_weights)
 
 def get_ids_masks(df, tokenizer, model):
     # tokenize the feature column 'word'
@@ -27,25 +33,27 @@ def get_ids_masks(df, tokenizer, model):
     mask = np.asarray(mask)
 
     # convert data to torch tensors
-    input_ids = torch.tensor(padded)
-    input_mask = torch.tensor(mask)
+    input_ids = torch.LongTensor(padded)
+    input_mask = torch.LongTensor(mask)
     
     return input_ids, input_mask
 
-input_ids, attention_masks = get_ids_masks(data, tokenizer, model)
+input_ids, attention_masks = get_ids_masks(df, tokenizer, model)
 
+# tell pytorch not to compute or store gradients
 with torch.no_grad():
-    last_hidden_states = model(input_ids.long(), attention_masks)
+    last_hidden_states = model(input_ids, attention_masks)
 
 # layer number, max token number, number of hidden unit / feature 
 print(last_hidden_states[0].size())
 
+# extract the last hidden state of the token `[CLS]` 
 features = last_hidden_states[0][:,0,:].numpy()
 
 # save as csv file
 features_df = pd.DataFrame(features)
-features_df.to_csv("feature_embeddings.csv", encoding='utf-8', index = False)
+features_df.to_csv("bert_emb.csv", encoding='utf-8', index = False)
 
 
-# Notes:
-# * An alternative to using the ```get_ids_masks``` function to get the input_ids and attention_masks is to use ```tokenizer.encode_plus```. The function has the ability to do everything listed in the ```get_ids_masks``` function. Check out the [documentation](https://huggingface.co/transformers/main_classes/tokenizer.html?highlight=encode_plus#transformers.PreTrainedTokenizer.encode_plus).
+# Note:
+# * An alternative to get the input_ids and attention_masks is to leverage the tokenizer.encode_plus function.
