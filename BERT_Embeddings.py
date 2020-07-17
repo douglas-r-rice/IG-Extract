@@ -33,26 +33,31 @@ def get_ids_masks(df, tokenizer, model):
     mask = np.asarray(mask)
 
     # convert data to torch tensors
-    input_ids = torch.LongTensor(padded)
-    input_mask = torch.LongTensor(mask)
+    input_ids = torch.Tensor(padded)
+    input_mask = torch.Tensor(mask)
     
     return input_ids, input_mask
 
 input_ids, attention_masks = get_ids_masks(df, tokenizer, model)
 
+# cuda for gpu acceleration
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu") 
+model.to(device)
+
 # tell pytorch not to compute or store gradients
 with torch.no_grad():
-    last_hidden_states = model(input_ids, attention_masks)
+    input_ids = input_ids.long()
+    last_hidden_states = model(input_ids.to(device), attention_masks.to(device))
 
 # layer number, max token number, number of hidden unit / feature 
 print(last_hidden_states[0].size())
 
 # extract the last hidden state of the token `[CLS]` 
-features = last_hidden_states[0][:,0,:].numpy()
+features = last_hidden_states[0][:,0,:].cpu().detach().numpy()
 
 # save as csv file
-features_df = pd.DataFrame(features)
-features_df.to_csv("bert_emb.csv", encoding='utf-8', index = False)
+features = pd.DataFrame(features)
+features.to_csv("bert_emb.csv", encoding='utf-8', index = False)
 
 
 # Note:
