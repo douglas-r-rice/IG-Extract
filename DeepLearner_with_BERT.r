@@ -1,4 +1,4 @@
-# dr_DeepLearner.s
+# DeepLearner_with_BERT.s
 # This program using a deep learning model to predict classifications.
 #
 # dr 1.29.2020
@@ -22,11 +22,8 @@ library(purrr)
 library(xgboost)
 library(keras)
 
-# set working directory to your computers
-setwd(".")
-
 # load BERT embeddings
-emb_path = "feature_embeddings.csv"
+emb_path = "bert_emb.csv"
 emb_df <- read.csv(emb_path)
 
 # read in some sample data
