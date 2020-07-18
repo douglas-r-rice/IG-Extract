@@ -22,17 +22,33 @@ library(keras)
 # install Keras with TensorFlow backend 
 install_keras()
 ```
+Important: Please make sure that you have installed a version of Java (i.e. 64-bit Java or 32-bit Java) that is the same as your R version (i.e. 64-bit R or 32-bit R) prior to installing the rJava package. Otherwise, you may encounter the error described [here](https://www.r-statistics.com/2012/08/how-to-load-the-rjava-package-after-the-error-java_home-cannot-be-determined-from-the-registry/). To check the type of R version you are using, type into the RStudio terminal: 
+```
+Sys.info()[["machine"]]  
+```
 
 ### Download Anaconda
 Anaconda is a Python distribution designed for predictive analytics and scientific computing. Anaconda includes many data science and machine learning packages. The best way to set up Python 3 and Jupyter Notebook is to get [Anaconda](https://www.anaconda.com/download/). It is recommended to stay one version back from the latest Python to avoid incompatibilty issues with other packages. 
 
-Please refer to this [article](https://medium.com/@margaretmz/anaconda-jupyter-notebook-tensorflow-and-keras-b91f381405f8) for more details on how to install Keras and TensorFlow in Python and on how to create a virtual environment. 
-
 ### Hugging Face Transformers Installation
-The first step to installing the Hugging Face library is to ensure that you have Tensorflow 2.0 and/or PyTorch installed. You can install Pytorch via Anaconda. 
-Visit [this](https://pytorch.org/get-started/locally/#mac-anaconda) website. Run the command presented to you in the Anaconda prompt after selecting the appropriate configuration options. 
+The first step to installing the Hugging Face library is to ensure that you have Tensorflow 2.0 and/or PyTorch installed in your [conda environment](https://medium.com/@margaretmz/anaconda-jupyter-notebook-tensorflow-and-keras-b91f381405f8). You can install [Pytorch](https://pytorch.org/get-started/locally/#mac-anaconda) via Anaconda or pip. Run the command presented to you in the Anaconda prompt after selecting the appropriate configuration options. 
 
 You can install Transformers in two ways: (1) [with pip](https://huggingface.co/transformers/installation.html#installation-with-pip) or (2) [from source](https://huggingface.co/transformers/installation.html#installing-from-source). The [Transformers documentation](https://huggingface.co/transformers/) is a good resource for getting started and a good reference for Transformers' built-in features.
+
+```
+# create a conda virtual environment
+conda create -n [env_name] python = [python_version]
+
+# activate the environment
+conda activate [env_name]
+
+# install PyTorch inside the environment
+pip install torchvision
+
+# install huggingface library
+pip install transformers
+
+```
 
 ### Install Git
 [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) is a distributed version control system. You will be using git to get the files in this repository. You can run git commands in the shell. 
@@ -43,13 +59,13 @@ You can install Transformers in two ways: (1) [with pip](https://huggingface.co/
 git clone https://gitlab.com/c2lab1/freygroup/igextract.git
 ```
 Now you have a local copy of the repo on your computer. You can use ```git pull``` to download changes from the remote repo to your local repo.
-* Run the file BERT_Embeddings.py to obtain the feature_embeddings.csv that will be used in DeepLearner_with_BERT.r.
+* Run the file BERT_Embeddings.py to obtain the bert_emb.csv that will be used in DeepLearner_with_BERT.r.
 * Then run the analysis ```source('DeepLearner_with_BERT.r')```.
 
-Your output ending should be something along the lines of: 
+Your output should be something along the lines of: 
 ```
-Accuracy with neural network  72.56
-Accuracy with xgboost using class probabilities  73.319
-Accuracy with neural network  73.75
-Accuracy with xgboost using class probabilities  73.889
+Accuracy with neural network  70.60738
+Accuracy with xgboost using class probabilities  72.66811
+Accuracy with neural network  71.68263
+Accuracy with xgboost using class probabilities  74.14501
 ```
