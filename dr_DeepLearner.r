@@ -20,10 +20,11 @@ library(fastDummies)
 library(caret)
 library(purrr)
 library(xgboost)
+library(tensorflow)
 library(keras)
 
-# set working directory to parent of fpc_files
-# setwd(".")
+# set seed for reproducibility
+use_session_with_seed(2020)
 
 # read in some sample data
 path = "fpc_files/fpc_{i}_with_code.csv"

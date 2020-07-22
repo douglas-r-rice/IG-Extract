@@ -20,7 +20,11 @@ library(fastDummies)
 library(caret)
 library(purrr)
 library(xgboost)
+library(tensorflow)
 library(keras)
+
+# set seed for reproducibility
+use_session_with_seed(2020)
 
 # load BERT embeddings
 emb_path = "bert_emb.csv"
