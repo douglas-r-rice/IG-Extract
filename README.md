@@ -49,6 +49,7 @@ pip install torchvision
 pip install transformers
 
 ```
+Note: You can install all the other required libraries using ```pip```.
 
 ### Install Git
 [Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git) is a distributed version control system. You will be using git to get the files in this repository. You can run git commands in the shell. 
@@ -60,9 +61,23 @@ git clone https://gitlab.com/c2lab1/freygroup/igextract.git
 ```
 Now you have a local copy of the repo on your computer. You can use ```git pull``` to download changes from the remote repo to your local repo.
 * Run the file BERT_Embeddings.py to obtain the bert_emb.csv that will be used in DeepLearner_with_BERT.r.
-* Then run the analysis ```source('DeepLearner_with_BERT.r')```.
+* To run the analysis once: 
+```
+source('DeepLearner_with_BERT.r')
+```
+* To run the analysis once or more times with different seeds:
+```
+library(tensorflow)
+library(keras)
 
-Your output should be something along the lines of: 
+# Generate 2 random seed values between 1 and 1000, without replacement
+rand_seed <- sample(1:1000, 2, replace=F)
+output <- lapply(rand_seed, function(x) {use_session_with_seed(x);source('DeepLearner_with_BERT.r')})
+```
+* Note that the number of runs depends on the number of random seeds generated. The code above runs the analysis twice. Running the analysis once could take a while.
+* Check your tensorflow version before using use_session_with_seed(). The function is currently incompatible with Tensorflow 2.0. If you run into an error, try downgrading the tensorflow version. 
+
+Results may vary, but your output should be something along the lines of: 
 ```
 Accuracy with neural network  70.60738
 Accuracy with xgboost using class probabilities  72.66811
