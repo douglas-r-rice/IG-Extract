@@ -23,8 +23,8 @@ library(xgboost)
 library(tensorflow)
 library(keras)
 
-# set seed for reproducibility
-use_session_with_seed(2020)
+# optional: set seed for reproducibility
+# use_session_with_seed(2020)
 
 # load BERT embeddings
 emb_path = "bert_emb.csv"
@@ -233,6 +233,9 @@ rownames(compare_data) <- 1:nrow(compare_data)
 cat("Accuracy with neural network ", sum(compare_data$Code ==compare_data$predicted_1st_round)/nrow(compare_data)*100, "\n")
 cat("Accuracy with xgboost using class probabilities ", sum(compare_data$Code == compare_data$predicted_2nd_round)/nrow(compare_data)*100, "\n")
 
+nn_one = sum(compare_data$Code ==compare_data$predicted_1st_round)/nrow(compare_data)*100
+xgb_one = sum(compare_data$Code == compare_data$predicted_2nd_round)/nrow(compare_data)*100
+
 myClasses <- as.matrix(table(compare_data$CodeType, compare_data$predicted_1st_round_label))
 myClasses <- myClasses[-1,]
 n <- sum(myClasses)
@@ -278,5 +281,10 @@ short_data <- short_data[-myDrops,]
 cat("Accuracy with neural network ", sum(short_data$Code ==short_data$predicted_1st_round)/nrow(short_data)*100, "\n")
 cat("Accuracy with xgboost using class probabilities ", sum(short_data$Code == short_data$predicted_2nd_round)/nrow(short_data)*100, "\n")
 
+nn_two = sum(short_data$Code ==short_data$predicted_1st_round)/nrow(short_data)*100
+xgb_two = sum(short_data$Code == short_data$predicted_2nd_round)/nrow(short_data)*100
 
+new_list = list(nn_one, xgb_one, nn_two, xgb_two)
+
+return(new_list)
 
