@@ -244,7 +244,7 @@ cat("Accuracy with neural network ", sum(short_data$Code ==short_data$predicted_
 # =-=-=-=-=-=-=-
 # incl boosting
 # =-=-=-=-=-=-=- 
-if (TRUE) {
+if (FALSE) {
     # training xgboost classifier by adding class probabilities from neural network to the existing data
     xgb <- xgboost(data = data.matrix(X_train_new), 
                    label = y_train, 
