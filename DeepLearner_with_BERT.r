@@ -133,6 +133,7 @@ X_test <- X_test[ ,intersect(colnames(X_train), colnames(X_test))]
 y_test <- final.test$CodeType
 
 
+
 if (FALSE) {
     # repeat the procedure above for emb_df
     emb_df$CodeType <- junk$CodeType
@@ -210,73 +211,21 @@ test_probs <- data.frame(test_probs)
 X_train_new <- cbind(final_X_train, train_probs)
 X_test_new <- cbind(final_X_test, test_probs)
 
-# training xgboost classifier by adding class probabilities from neural network to the existing data
-xgb <- xgboost(data = data.matrix(X_train_new), 
-               label = y_train, 
-               eta = 0.1,
-               max_depth = 20, 
-               nround=30,
-               lambda=0.08,
-               eval_metric = "mlogloss",
-               objective = "multi:softmax",
-               num_class = 6,
-               nthread = 3
-)
-
 train_sample <- sample[1:8320,]
 test_sample <- sample[8321:nrow(df),]
 compare_data <- test_sample
 
 y_pred_neural <- predict_classes(model, final_X_test)
-y_pred_xgb <- predict(xgb, data.matrix(X_test_new))
 compare_data$predicted_1st_round <- y_pred_neural
 compare_data$predicted_1st_round_label <- mapvalues(compare_data$predicted_1st_round,
                                                     from = c(0,1,2,3,4,5),
                                                     to = c("Aim", "Attribute", "Condition", "Deontic", "Object", "Orelse"))
 
-compare_data$predicted_2nd_round <- y_pred_xgb
-compare_data$predicted_2nd_round_label <- mapvalues(compare_data$predicted_2nd_round,
-                                                    from = c(0,1,2,3,4,5),
-                                                    to = c("Aim", "Attribute", "Condition", "Deontic", "Object", "Orelse"))
 
 # compare_data contains results from both the models for words selected in the test set 
 rownames(compare_data) <- 1:nrow(compare_data)
 
 cat("Accuracy with neural network ", sum(compare_data$Code ==compare_data$predicted_1st_round)/nrow(compare_data)*100, "\n")
-cat("Accuracy with xgboost using class probabilities ", sum(compare_data$Code == compare_data$predicted_2nd_round)/nrow(compare_data)*100, "\n")
-
-nn_one = sum(compare_data$Code ==compare_data$predicted_1st_round)/nrow(compare_data)*100
-xgb_one = sum(compare_data$Code == compare_data$predicted_2nd_round)/nrow(compare_data)*100
-
-myClasses <- as.matrix(table(compare_data$CodeType, compare_data$predicted_1st_round_label))
-myClasses <- myClasses[-1,]
-n <- sum(myClasses)
-nc <- nrow(myClasses)
-myDiag <- diag(myClasses)
-myRowSums <- apply(myClasses, 1, sum)
-myColSums <- apply(myClasses, 2, sum)
-p <-  myRowSums / n
-q <- myColSums / n
-
-myAccuracy <- sum(myDiag) / n
-precision <- myDiag / myColSums
-recall <- myDiag / myRowSums
-f1 <- (2 * precision * recall ) / (precision + recall)
-
-myClasses <- as.matrix(table(compare_data$CodeType, compare_data$predicted_2nd_round_label))
-myClasses <- myClasses[-1,]
-n <- sum(myClasses)
-nc <- nrow(myClasses)
-myDiag <- diag(myClasses)
-myRowSums <- apply(myClasses, 1, sum)
-myColSums <- apply(myClasses, 2, sum)
-p <-  myRowSums / n
-q <- myColSums / n
-
-myAccuracy <- sum(myDiag) / n
-precision <- myDiag / myColSums
-recall <- myDiag / myRowSums
-f1 <- (2 * precision * recall ) / (precision + recall)
 
 
 
@@ -291,12 +240,77 @@ myDrops <- which(short_data$word %in% myStops)
 short_data <- short_data[-myDrops,]
 
 cat("Accuracy with neural network ", sum(short_data$Code ==short_data$predicted_1st_round)/nrow(short_data)*100, "\n")
-cat("Accuracy with xgboost using class probabilities ", sum(short_data$Code == short_data$predicted_2nd_round)/nrow(short_data)*100, "\n")
 
-nn_two = sum(short_data$Code ==short_data$predicted_1st_round)/nrow(short_data)*100
-xgb_two = sum(short_data$Code == short_data$predicted_2nd_round)/nrow(short_data)*100
+# =-=-=-=-=-=-=-
+# incl boosting
+# =-=-=-=-=-=-=- 
+if (TRUE) {
+    # training xgboost classifier by adding class probabilities from neural network to the existing data
+    xgb <- xgboost(data = data.matrix(X_train_new), 
+                   label = y_train, 
+                   eta = 0.1,
+                   max_depth = 20, 
+                   nround=30,
+                   lambda=0.08,
+                   eval_metric = "mlogloss",
+                   objective = "multi:softmax",
+                   num_class = 6,
+                   nthread = 3
+    )
 
-new_list = list(nn_one, xgb_one, nn_two, xgb_two)
+    y_pred_xgb <- predict(xgb, data.matrix(X_test_new))
+    compare_data$predicted_2nd_round <- y_pred_xgb
+    compare_data$predicted_2nd_round_label <- mapvalues(compare_data$predicted_2nd_round,
+                                                        from = c(0,1,2,3,4,5),
+                                                        to = c("Aim", "Attribute", "Condition", "Deontic", "Object", "Orelse"))
 
-print(new_list)
 
+    myClasses <- as.matrix(table(compare_data$CodeType, compare_data$predicted_1st_round_label))
+    myClasses <- myClasses[-1,]
+    n <- sum(myClasses)
+    nc <- nrow(myClasses)
+    myDiag <- diag(myClasses)
+    myRowSums <- apply(myClasses, 1, sum)
+    myColSums <- apply(myClasses, 2, sum)
+    p <-  myRowSums / n
+    q <- myColSums / n
+
+    myAccuracy <- sum(myDiag) / n
+    precision <- myDiag / myColSums
+    recall <- myDiag / myRowSums
+    f1 <- (2 * precision * recall ) / (precision + recall)
+
+    myClasses <- as.matrix(table(compare_data$CodeType, compare_data$predicted_2nd_round_label))
+    myClasses <- myClasses[-1,]
+    n <- sum(myClasses)
+    nc <- nrow(myClasses)
+    myDiag <- diag(myClasses)
+    myRowSums <- apply(myClasses, 1, sum)
+    myColSums <- apply(myClasses, 2, sum)
+    p <-  myRowSums / n
+    q <- myColSums / n
+
+    myAccuracy <- sum(myDiag) / n
+    precision <- myDiag / myColSums
+    recall <- myDiag / myRowSums
+    f12 <- (2 * precision * recall ) / (precision + recall)
+
+    short_data <- compare_data
+    colnames(short_data)[1] <- "word"
+    myStops <- c("the", "of", "a", "an", "and", "is", "it")
+    myDrops <- which(short_data$word %in% myStops)
+    short_data <- short_data[-myDrops,]
+
+    cat("Accuracy with neural network ", sum(compare_data$Code ==compare_data$predicted_1st_round)/nrow(compare_data)*100, "\n")
+    cat("Accuracy with neural network ", sum(short_data$Code ==short_data$predicted_1st_round)/nrow(short_data)*100, "\n")
+    cat("Accuracy with xgboost using class probabilities ", sum(compare_data$Code == compare_data$predicted_2nd_round)/nrow(compare_data)*100, "\n")
+    cat("Accuracy with xgboost using class probabilities ", sum(short_data$Code == short_data$predicted_2nd_round)/nrow(short_data)*100, "\n")
+
+    nn_one = sum(compare_data$Code ==compare_data$predicted_1st_round)/nrow(compare_data)*100
+    xgb_one = sum(compare_data$Code == compare_data$predicted_2nd_round)/nrow(compare_data)*100
+    nn_two = sum(short_data$Code ==short_data$predicted_1st_round)/nrow(short_data)*100
+    xgb_two = sum(short_data$Code == short_data$predicted_2nd_round)/nrow(short_data)*100
+    new_list = list(nn_one, xgb_one, f1, nn_two, xgb_two, f12)
+
+    print(new_list)
+}
