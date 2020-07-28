@@ -44,6 +44,8 @@ fpc1$new_word <- as.factor(fpc1$word)
 fpc1$new_pos <- as.factor(fpc1$pos)
 fpc1$new_source <- as.factor(fpc1$word_source)
 
+fpc1$CodeType <- as.factor(fpc1$CodeType)
+
 fpc1$id <- NULL
 fpc1$sid <- NULL
 fpc1$index <- 0
@@ -77,7 +79,7 @@ junk$after_new_source <- as.numeric(junk$after_new_source)
 
 junk <- dummy_cols(junk, select_columns = c("new_word", "before_new_word", "after_new_word", "new_relations", "new_pos", "before_new_relations", "before_new_pos", "after_new_relations", "after_new_pos", "before_new_source", "after_new_source"))
 
-colnames(junk)
+#colnames(junk)
 # drop the original factor variable
 junk <- junk[, -which(colnames(junk) %in% c("new_word", "new_source", "before_new_word", "tid", "sentiment", "before_sentiment", "after_sentiment", "before_new_words", "before_new_source", "after_new_word", "after_new_source", "new_relations", "new_pos", "before_new_relations", "before_new_pos", "after_new_relations", "after_new_pos"))]
 
@@ -286,5 +288,5 @@ xgb_two = sum(short_data$Code == short_data$predicted_2nd_round)/nrow(short_data
 
 new_list = list(nn_one, xgb_one, nn_two, xgb_two)
 
-return(new_list)
+print(new_list)
 
