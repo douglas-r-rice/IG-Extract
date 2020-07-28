@@ -84,7 +84,12 @@ junk <- dummy_cols(junk, select_columns = c("new_word", "before_new_word", "afte
 junk <- junk[, -which(colnames(junk) %in% c("new_word", "new_source", "before_new_word", "tid", "sentiment", "before_sentiment", "after_sentiment", "before_new_words", "before_new_source", "after_new_word", "after_new_source", "new_relations", "new_pos", "before_new_relations", "before_new_pos", "after_new_relations", "after_new_pos"))]
 
 sample$CodeType <- junk$CodeType
-df <- junk 
+if (TRUE) {
+    df <- cbind(junk , emb_df)
+} 
+if (FALSE) {
+    df <- junk
+}
 df <- df[-which(df$CodeType == ""),] 
 sample <- sample[-which(sample$CodeType == ""),]
 sample <- na.omit(sample)
@@ -128,30 +133,35 @@ X_test <- X_test[ ,intersect(colnames(X_train), colnames(X_test))]
 y_test <- final.test$CodeType
 
 
+if (FALSE) {
+    # repeat the procedure above for emb_df
+    emb_df$CodeType <- junk$CodeType
+    emb_df <- emb_df[-which(emb_df$CodeType == ""),] # remove rows with no codetype
+    emb_df <- na.omit(emb_df) # removes nan 
+    emb_df <- emb_df[rownames(df),] # subset rows only in df 
+    emb_df <- emb_df[newOrder,] # shuffle the data
+    emb_final.training <- emb_df[1:8320,] 
+    emb_final.test <- emb_df[8321:nrow(emb_df),] 
 
-# repeat the procedure above for emb_df
-emb_df$CodeType <- junk$CodeType
-emb_df <- emb_df[-which(emb_df$CodeType == ""),] # remove rows with no codetype
-emb_df <- na.omit(emb_df) # removes nan 
-emb_df <- emb_df[rownames(df),] # subset rows only in df 
-emb_df <- emb_df[newOrder,] # shuffle the data
-emb_final.training <- emb_df[1:8320,] 
-emb_final.test <- emb_df[8321:nrow(emb_df),] 
+    # scaling
+    emb_X_train <- emb_final.training %>% 
+    select(-CodeType) %>%
+    scale()
 
-# scaling
-emb_X_train <- emb_final.training %>% 
-  select(-CodeType) %>%
-  scale()
+    emb_X_test <- emb_final.test %>% 
+    select(-CodeType) %>%
+    scale()
 
-emb_X_test <- emb_final.test %>% 
-  select(-CodeType) %>%
-  scale()
+    final_X_train <- cbind(X_train, emb_X_train)
+    final_X_test <- cbind(X_test, emb_X_test)
 
-final_X_train <- cbind(X_train, emb_X_train)
-final_X_test <- cbind(X_test, emb_X_test)
-
-dim(emb_X_train) # 8320  768
-dim(emb_X_test) # 922 768
+    dim(emb_X_train) # 8320  768
+    dim(emb_X_test) # 922 768
+}
+if (TRUE) {
+    final_X_train <- X_train
+    final_X_test <- X_test
+}
 
 dim(final_X_train) 
 dim(final_X_test) 
