@@ -79,7 +79,7 @@ junk$after_new_source <- as.numeric(junk$after_new_source)
 
 junk <- dummy_cols(junk, select_columns = c("new_word", "before_new_word", "after_new_word", "new_relations", "new_pos", "before_new_relations", "before_new_pos", "after_new_relations", "after_new_pos", "before_new_source", "after_new_source"))
 
-#colnames(junk)
+# colnames(junk)
 # drop the original factor variable
 junk <- junk[, -which(colnames(junk) %in% c("new_word", "new_source", "before_new_word", "tid", "sentiment", "before_sentiment", "after_sentiment", "before_new_words", "before_new_source", "after_new_word", "after_new_source", "new_relations", "new_pos", "before_new_relations", "before_new_pos", "after_new_relations", "after_new_pos"))]
 
@@ -110,8 +110,8 @@ newOrder <- sample(1:nrow(df))
 sample <- sample[newOrder,]
 df <- df[newOrder,]
 
-final.training <- df[1:8320,] # dim: 8320 7850
-final.test <- df[8321:nrow(df),] # 922 7850
+final.training <- df[1:8320,] 
+final.test <- df[8321:nrow(df),] 
 
 X_train <- final.training %>% 
   select(-CodeType) %>%
@@ -140,7 +140,6 @@ if (FALSE) {
     emb_df <- emb_df[-which(emb_df$CodeType == ""),] # remove rows with no codetype
     emb_df <- na.omit(emb_df) # removes nan 
     emb_df <- emb_df[rownames(df),] # subset rows only in df 
-    emb_df <- emb_df[newOrder,] # shuffle the data
     emb_final.training <- emb_df[1:8320,] 
     emb_final.test <- emb_df[8321:nrow(emb_df),] 
 
@@ -155,17 +154,11 @@ if (FALSE) {
 
     final_X_train <- cbind(X_train, emb_X_train)
     final_X_test <- cbind(X_test, emb_X_test)
-
-    dim(emb_X_train) # 8320  768
-    dim(emb_X_test) # 922 768
 }
 if (TRUE) {
     final_X_train <- X_train
     final_X_test <- X_test
 }
-
-dim(final_X_train) 
-dim(final_X_test) 
 
 
 
@@ -301,15 +294,16 @@ if (FALSE) {
     myDrops <- which(short_data$word %in% myStops)
     short_data <- short_data[-myDrops,]
 
-    cat("Accuracy with neural network ", sum(compare_data$Code ==compare_data$predicted_1st_round)/nrow(compare_data)*100, "\n")
-    cat("Accuracy with neural network ", sum(short_data$Code ==short_data$predicted_1st_round)/nrow(short_data)*100, "\n")
-    cat("Accuracy with xgboost using class probabilities ", sum(compare_data$Code == compare_data$predicted_2nd_round)/nrow(compare_data)*100, "\n")
-    cat("Accuracy with xgboost using class probabilities ", sum(short_data$Code == short_data$predicted_2nd_round)/nrow(short_data)*100, "\n")
-
     nn_one = sum(compare_data$Code ==compare_data$predicted_1st_round)/nrow(compare_data)*100
     xgb_one = sum(compare_data$Code == compare_data$predicted_2nd_round)/nrow(compare_data)*100
     nn_two = sum(short_data$Code ==short_data$predicted_1st_round)/nrow(short_data)*100
     xgb_two = sum(short_data$Code == short_data$predicted_2nd_round)/nrow(short_data)*100
+    
+    cat("Accuracy with neural network ", nn_one, "\n")
+    cat("Accuracy with neural network ", nn_two, "\n")
+    cat("Accuracy with xgboost using class probabilities ", xgb_one, "\n")
+    cat("Accuracy with xgboost using class probabilities ", xgb_two, "\n")
+
     new_list = list(nn_one, xgb_one, f1, nn_two, xgb_two, f12)
 
     print(new_list)
