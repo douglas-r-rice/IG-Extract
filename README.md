@@ -2,9 +2,10 @@
 This repository contains the following:\
 (1) fpc_files directory: this contains coded Food Policy Council documents in a format appropriate for our analysis.\
 (2) BERT_Embeddings.py: this contains the code to obtain the word embeddings from BERT for all the data in the fpc_files directory. \
-(3) DeepLearner_with_BERT.r: modified version of dr_DeepLearner.r that incorporates the embeddings for analyses. \
+(3) DeepLearner_with_BERT.r: modified version of dr_DeepLearner.r that incorporates the embeddings for analysis. \
 (4) dr_DeepLearner.r: this file contains the R code that creates the data contained in the fpc_files folder, and then
-	executes a series of analyses. The code is commented to indicate what is being done. 
+	executes a series of analyses. The code is commented to indicate what is being done. \
+(5) bert_as_service_embeddings.py: this file contains the code to use Han Xiao's BERT-as-service to extract word embeddings.
 
 
 ## Software Installation for Deep Learning
