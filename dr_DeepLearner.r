@@ -74,7 +74,7 @@ junk$after_new_source <- as.numeric(junk$after_new_source)
 
 junk <- dummy_cols(junk, select_columns = c("new_word", "before_new_word", "after_new_word", "new_relations", "new_pos", "before_new_relations", "before_new_pos", "after_new_relations", "after_new_pos", "before_new_source", "after_new_source"))
 
-colnames(junk)
+#colnames(junk)
 # drop the original factor variable
 junk <- junk[, -which(colnames(junk) %in% c("new_word", "new_source", "before_new_word", "tid", "sentiment", "before_sentiment", "after_sentiment", "before_new_words", "before_new_source", "after_new_word", "after_new_source", "new_relations", "new_pos", "before_new_relations", "before_new_pos", "after_new_relations", "after_new_pos"))]
 
@@ -100,8 +100,8 @@ newOrder <- sample(1:nrow(df))
 sample <- sample[newOrder,]
 df <- df[newOrder,]
 
-final.training <- df[1:8320,]
-final.test <- df[8321:nrow(df),]
+final.training <- df[1:floor(0.9*nrow(df)),]
+final.test <- df[ceiling(0.9*nrow(df)):nrow(df),]
 
 X_train <- final.training %>% 
   select(-CodeType) %>%
@@ -165,40 +165,19 @@ test_probs <- data.frame(test_probs)
 X_train_new <- cbind(X_train, train_probs)
 X_test_new <- cbind(X_test, test_probs)
 
-# training xgboost classifier by adding class probabilities from neural network to the existing data
-xgb <- xgboost(data = data.matrix(X_train_new), 
-               label = y_train, 
-               eta = 0.1,
-               max_depth = 20, 
-               nround=30,
-               lambda=0.08,
-               eval_metric = "mlogloss",
-               objective = "multi:softmax",
-               num_class = 6,
-               nthread = 3
-)
 
-train_sample <- sample[1:8320,]
-test_sample <- sample[8321:nrow(df),]
+print("XXX")
+print( dim(sample))
+train_sample <- sample[1:floor(0.9*nrow(df)),]
+test_sample <- sample[ceiling(0.9*nrow(df)):nrow(df),]
 compare_data <- test_sample
 
 y_pred_neural <- predict_classes(model, X_test)
-y_pred_xgb <- predict(xgb, data.matrix(X_test_new))
 compare_data$predicted_1st_round <- y_pred_neural
 compare_data$predicted_1st_round_label <- mapvalues(compare_data$predicted_1st_round,
                                                     from = c(0,1,2,3,4,5),
                                                     to = c("Aim", "Attribute", "Condition", "Deontic", "Object", "Orelse"))
 
-compare_data$predicted_2nd_round <- y_pred_xgb
-compare_data$predicted_2nd_round_label <- mapvalues(compare_data$predicted_2nd_round,
-                                                    from = c(0,1,2,3,4,5),
-                                                    to = c("Aim", "Attribute", "Condition", "Deontic", "Object", "Orelse"))
-
-# compare_data contains results from both the models for words selected in the test set 
-rownames(compare_data) <- 1:nrow(compare_data)
-
-cat("Accuracy with neural network ", sum(compare_data$Code ==compare_data$predicted_1st_round)/nrow(compare_data)*100, "\n")
-cat("Accuracy with xgboost using class probabilities ", sum(compare_data$Code == compare_data$predicted_2nd_round)/nrow(compare_data)*100, "\n")
 
 myClasses <- as.matrix(table(compare_data$CodeType, compare_data$predicted_1st_round_label))
 myClasses <- myClasses[-1,]
@@ -214,6 +193,42 @@ myAccuracy <- sum(myDiag) / n
 precision <- myDiag / myColSums
 recall <- myDiag / myRowSums
 f1 <- (2 * precision * recall ) / (precision + recall)
+
+# =-=-=-=-=-=-=-
+# compute w/out stop words
+# =-=-=-=-=-=-=- 
+
+short_data <- compare_data
+colnames(short_data)[1] <- "word"
+myStops <- c("the", "of", "a", "an", "and", "is", "it")
+myDrops <- which(short_data$word %in% myStops)
+short_data <- short_data[-myDrops,]
+
+cat("Accuracy with neural network ", sum(compare_data$Code ==compare_data$predicted_1st_round)/nrow(compare_data)*100, " F1:", f1, "\n")
+cat("Accuracy with neural network (w/out stop words)", sum(short_data$Code ==short_data$predicted_1st_round)/nrow(short_data)*100, "\n")
+
+# training xgboost classifier by adding class probabilities from neural network to the existing data
+xgb <- xgboost(data = data.matrix(X_train_new), 
+               label = y_train, 
+               eta = 0.1,
+               max_depth = 20, 
+               nround=30,
+               lambda=0.08,
+               eval_metric = "mlogloss",
+               objective = "multi:softmax",
+               num_class = 6,
+               nthread = 3
+)
+
+y_pred_xgb <- predict(xgb, data.matrix(X_test_new))
+compare_data$predicted_2nd_round <- y_pred_xgb
+compare_data$predicted_2nd_round_label <- mapvalues(compare_data$predicted_2nd_round,
+                                                    from = c(0,1,2,3,4,5),
+                                                    to = c("Aim", "Attribute", "Condition", "Deontic", "Object", "Orelse"))
+
+# compare_data contains results from both the models for words selected in the test set 
+rownames(compare_data) <- 1:nrow(compare_data)
+
 
 myClasses <- as.matrix(table(compare_data$CodeType, compare_data$predicted_2nd_round_label))
 myClasses <- myClasses[-1,]
@@ -242,8 +257,8 @@ myStops <- c("the", "of", "a", "an", "and", "is", "it")
 myDrops <- which(short_data$word %in% myStops)
 short_data <- short_data[-myDrops,]
 
-cat("Accuracy with neural network ", sum(short_data$Code ==short_data$predicted_1st_round)/nrow(short_data)*100, "\n")
-cat("Accuracy with xgboost using class probabilities ", sum(short_data$Code == short_data$predicted_2nd_round)/nrow(short_data)*100, "\n")
+cat("Accuracy with xgboost using class probabilities ", sum(compare_data$Code == compare_data$predicted_2nd_round)/nrow(compare_data)*100, " F1: ", f1, "\n")
+cat("Accuracy with xgboost using class probabilities ( w/out stop words )", sum(short_data$Code == short_data$predicted_2nd_round)/nrow(short_data)*100, "\n")
 
 
 
