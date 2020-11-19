@@ -25,11 +25,17 @@ library(keras)
 # set working directory to parent of fpc_files
 #setwd(".")
 
+num_files_input <- 19
+num_files_input <- 5
+use_boosting <- TRUE
+use_boosting <- FALSE
+use_session_with_seed(2020)
+
 # read in some sample data
 path = "fpc_files/fpc_{i}_with_code.csv"
 
 fpc1 <- data.frame()
-for (i in 1:19) {
+for (i in 1:num_files_input) {
   fpc1 <- rbind(fpc1, read.csv(glue(path)))
 }
 
@@ -207,58 +213,60 @@ short_data <- short_data[-myDrops,]
 cat("Accuracy with neural network ", sum(compare_data$Code ==compare_data$predicted_1st_round)/nrow(compare_data)*100, " F1:", f1, "\n")
 cat("Accuracy with neural network (w/out stop words)", sum(short_data$Code ==short_data$predicted_1st_round)/nrow(short_data)*100, "\n")
 
-# training xgboost classifier by adding class probabilities from neural network to the existing data
-xgb <- xgboost(data = data.matrix(X_train_new), 
-               label = y_train, 
-               eta = 0.1,
-               max_depth = 20, 
-               nround=30,
-               lambda=0.08,
-               eval_metric = "mlogloss",
-               objective = "multi:softmax",
-               num_class = 6,
-               nthread = 3
-)
+if (use_boosting) {
+    # training xgboost classifier by adding class probabilities from neural network to the existing data
+    xgb <- xgboost(data = data.matrix(X_train_new), 
+                   label = y_train, 
+                   eta = 0.1,
+                   max_depth = 20, 
+                   nround=30,
+                   lambda=0.08,
+                   eval_metric = "mlogloss",
+                   objective = "multi:softmax",
+                   num_class = 6,
+                   nthread = 3
+    )
 
-y_pred_xgb <- predict(xgb, data.matrix(X_test_new))
-compare_data$predicted_2nd_round <- y_pred_xgb
-compare_data$predicted_2nd_round_label <- mapvalues(compare_data$predicted_2nd_round,
-                                                    from = c(0,1,2,3,4,5),
-                                                    to = c("Aim", "Attribute", "Condition", "Deontic", "Object", "Orelse"))
+    y_pred_xgb <- predict(xgb, data.matrix(X_test_new))
+    compare_data$predicted_2nd_round <- y_pred_xgb
+    compare_data$predicted_2nd_round_label <- mapvalues(compare_data$predicted_2nd_round,
+                                                        from = c(0,1,2,3,4,5),
+                                                        to = c("Aim", "Attribute", "Condition", "Deontic", "Object", "Orelse"))
 
-# compare_data contains results from both the models for words selected in the test set 
-rownames(compare_data) <- 1:nrow(compare_data)
-
-
-myClasses <- as.matrix(table(compare_data$CodeType, compare_data$predicted_2nd_round_label))
-myClasses <- myClasses[-1,]
-n <- sum(myClasses)
-nc <- nrow(myClasses)
-myDiag <- diag(myClasses)
-myRowSums <- apply(myClasses, 1, sum)
-myColSums <- apply(myClasses, 2, sum)
-p <-  myRowSums / n
-q <- myColSums / n
-
-myAccuracy <- sum(myDiag) / n
-precision <- myDiag / myColSums
-recall <- myDiag / myRowSums
-f1 <- (2 * precision * recall ) / (precision + recall)
+    # compare_data contains results from both the models for words selected in the test set 
+    rownames(compare_data) <- 1:nrow(compare_data)
 
 
+    myClasses <- as.matrix(table(compare_data$CodeType, compare_data$predicted_2nd_round_label))
+    myClasses <- myClasses[-1,]
+    n <- sum(myClasses)
+    nc <- nrow(myClasses)
+    myDiag <- diag(myClasses)
+    myRowSums <- apply(myClasses, 1, sum)
+    myColSums <- apply(myClasses, 2, sum)
+    p <-  myRowSums / n
+    q <- myColSums / n
 
-# =-=-=-=-=-=-=-
-# compute w/out stop words
-# =-=-=-=-=-=-=- 
-
-short_data <- compare_data
-colnames(short_data)[1] <- "word"
-myStops <- c("the", "of", "a", "an", "and", "is", "it")
-myDrops <- which(short_data$word %in% myStops)
-short_data <- short_data[-myDrops,]
-
-cat("Accuracy with xgboost using class probabilities ", sum(compare_data$Code == compare_data$predicted_2nd_round)/nrow(compare_data)*100, " F1: ", f1, "\n")
-cat("Accuracy with xgboost using class probabilities ( w/out stop words )", sum(short_data$Code == short_data$predicted_2nd_round)/nrow(short_data)*100, "\n")
+    myAccuracy <- sum(myDiag) / n
+    precision <- myDiag / myColSums
+    recall <- myDiag / myRowSums
+    f1 <- (2 * precision * recall ) / (precision + recall)
 
 
 
+    # =-=-=-=-=-=-=-
+    # compute w/out stop words
+    # =-=-=-=-=-=-=- 
+
+    short_data <- compare_data
+    colnames(short_data)[1] <- "word"
+    myStops <- c("the", "of", "a", "an", "and", "is", "it")
+    myDrops <- which(short_data$word %in% myStops)
+    short_data <- short_data[-myDrops,]
+
+    cat("Accuracy with xgboost using class probabilities ", sum(compare_data$Code == compare_data$predicted_2nd_round)/nrow(compare_data)*100, " F1: ", f1, "\n")
+    cat("Accuracy with xgboost using class probabilities ( w/out stop words )", sum(short_data$Code == short_data$predicted_2nd_round)/nrow(short_data)*100, "\n")
+
+
+
+}
