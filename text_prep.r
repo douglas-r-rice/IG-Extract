@@ -1,3 +1,7 @@
+### TODO
+### convert binary presence features to tfidf?
+### tag bert on as well
+
 library(stringr)
 library(glue)
 library(dplyr)
@@ -6,8 +10,8 @@ library(fastDummies)
 # set working directory to parent of fpc_files
 #setwd(".")
 
-num_files_input <- 19
 num_files_input <- 5
+num_files_input <- 19
 
 # read in some sample data
 path = "fpc_files/fpc_{i}_with_code.csv"
@@ -31,6 +35,7 @@ fpc1$index <- 0
 for (i in 1:nrow(fpc1)) {
   fpc1[i, "index"] <- i-1
 }
+sample <- data.frame(fpc1[, "new_word"])
 
 # create lag variables
 lagjunk <- fpc1 
@@ -48,7 +53,6 @@ junk <- merge(junk, leadjunk, by=c("index", "tid"), all.x=T)
 
 # create a series of dummy variable
 junk <- junk[,which(colnames(junk) %in% c("CodeType", "tid", "new_relations", "new_word", "new_pos", "new_source", "before_new_relations", "before_new_word", "before_new_pos", "before_new_source", "after_new_relations", "after_new_word", "after_new_pos", "after_new_source", "sentiment", "before_sentiment", "after_sentiment"))]
-sample <- data.frame(junk[, "new_word"])
 junk$new_word <- as.numeric(junk$new_word)
 junk$new_source <- as.numeric(junk$new_source)
 junk$before_new_word <- as.numeric(junk$before_new_word)
@@ -62,24 +66,25 @@ junk <- dummy_cols(junk, select_columns = c("new_word", "before_new_word", "afte
 # drop the original factor variable
 junk <- junk[, -which(colnames(junk) %in% c("new_word", "new_source", "before_new_word", "tid", "sentiment", "before_sentiment", "after_sentiment", "before_new_words", "before_new_source", "after_new_word", "after_new_source", "new_relations", "new_pos", "before_new_relations", "before_new_pos", "after_new_relations", "after_new_pos"))]
 
-sample$CodeType <- junk$CodeType
 df <- junk
 df <- df[-which(df$CodeType == ""),]
-sample <- sample[-which(sample$CodeType == ""),]
-sample <- na.omit(sample)
 df <- na.omit(df)
-
-sample <- sample[rownames(df),]
-
 df$CodeType <- as.numeric(df$CodeType)
 df$CodeType <- df$CodeType -2
+
+sample$CodeType <- junk$CodeType
+sample <- sample[-which(sample$CodeType == ""),]
+sample <- na.omit(sample)
+sample <- sample[rownames(df),]
 sample$Code <- df$CodeType
 
 
-#  prep for writing
+#  prep for writing to file
 sample[,1] <- as.character( sample[,1] )
 sample$CodeType <- as.character( sample$CodeType )
 
+### sample is actually the core data
+### df is the text features (tfidf?)
 
 write.csv(sample, "step1_data_sample.csv", row.names=FALSE)
 write.csv(df, "step1_data_df.csv", row.names=FALSE)

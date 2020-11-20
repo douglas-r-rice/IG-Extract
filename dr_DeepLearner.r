@@ -22,10 +22,13 @@ library(purrr)
 library(xgboost)
 library(keras)
 
-use_boosting <- TRUE
 use_boosting <- FALSE
+use_boosting <- TRUE
 #use_session_with_seed(2020)
 
+# load data
+### df is the text features (tfidf?), but also the main thing that gets trained
+### sample is actually the core data, with the text labels, but is only used at the end reporting accuracy etc
 sample <- read.csv( "step1_data_sample.csv")
 df <- read.csv( "step1_data_df.csv")
 
@@ -143,8 +146,10 @@ myStops <- c("the", "of", "a", "an", "and", "is", "it")
 myDrops <- which(short_data$word %in% myStops)
 short_data <- short_data[-myDrops,]
 
-cat("Accuracy with neural network ", sum(compare_data$Code ==compare_data$predicted_1st_round)/nrow(compare_data)*100, " F1:", f1, "\n")
+cat("Accuracy with neural network ", sum(compare_data$Code ==compare_data$predicted_1st_round)/nrow(compare_data)*100, "\n")
 cat("Accuracy with neural network (w/out stop words)", sum(short_data$Code ==short_data$predicted_1st_round)/nrow(short_data)*100, "\n")
+cat(" F1:", colnames(myClasses ), "\n")
+cat(" F1:", f1, "\n")
 
 if (use_boosting) {
     # training xgboost classifier by adding class probabilities from neural network to the existing data
@@ -171,7 +176,7 @@ if (use_boosting) {
 
 
     myClasses <- as.matrix(table(compare_data$CodeType, compare_data$predicted_2nd_round_label))
-    myClasses <- myClasses[-1,]
+    #myClasses <- myClasses[-1,] ### refres to the factor label for "", which has already been filtered out
     n <- sum(myClasses)
     nc <- nrow(myClasses)
     myDiag <- diag(myClasses)
@@ -197,8 +202,10 @@ if (use_boosting) {
     myDrops <- which(short_data$word %in% myStops)
     short_data <- short_data[-myDrops,]
 
-    cat("Accuracy with xgboost using class probabilities ", sum(compare_data$Code == compare_data$predicted_2nd_round)/nrow(compare_data)*100, " F1: ", f1, "\n")
+    cat("Accuracy with xgboost using class probabilities ", sum(compare_data$Code == compare_data$predicted_2nd_round)/nrow(compare_data)*100, "\n")
     cat("Accuracy with xgboost using class probabilities ( w/out stop words )", sum(short_data$Code == short_data$predicted_2nd_round)/nrow(short_data)*100, "\n")
+cat(" F1:", colnames(myClasses ), "\n")
+cat(" F1:", f1, "\n")
 
 
 
