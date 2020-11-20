@@ -22,80 +22,16 @@ library(purrr)
 library(xgboost)
 library(keras)
 
-# set working directory to parent of fpc_files
-#setwd(".")
-
-num_files_input <- 19
-num_files_input <- 5
 use_boosting <- TRUE
 use_boosting <- FALSE
-use_session_with_seed(2020)
+#use_session_with_seed(2020)
 
-# read in some sample data
-path = "fpc_files/fpc_{i}_with_code.csv"
+sample <- read.csv( "step1_data_sample.csv")
+df <- read.csv( "step1_data_df.csv")
 
-fpc1 <- data.frame()
-for (i in 1:num_files_input) {
-  fpc1 <- rbind(fpc1, read.csv(glue(path)))
-}
-
-# pull just the data we want
-fpc1$new_relations <- as.factor(fpc1$relation)
-fpc1$new_word <- as.factor(fpc1$word)
-fpc1$new_pos <- as.factor(fpc1$pos)
-fpc1$new_source <- as.factor(fpc1$word_source)
-
-fpc1$CodeType <- as.factor(fpc1$CodeType)
-
-fpc1$id <- NULL
-fpc1$sid <- NULL
-fpc1$index <- 0
-for (i in 1:nrow(fpc1)) {
-  fpc1[i, "index"] <- i-1
-}
-
-# create lag variables
-lagjunk <- fpc1 
-lagjunk$tid <- fpc1$tid+1
-lagjunk$index <- fpc1$index+1
-colnames(lagjunk)[2:(ncol(lagjunk)-1)] <- paste0("before_", colnames(lagjunk)[2:(ncol(lagjunk)-1)])
-junk <- merge(fpc1, lagjunk, by=c("index", "tid"), all.x=T)
-
-# create lead variables
-leadjunk <- fpc1 
-leadjunk$tid <- fpc1$tid-1
-leadjunk$index <- fpc1$index-1
-colnames(leadjunk)[2:(ncol(lagjunk)-1)] <- paste0("after_", colnames(leadjunk)[2:(ncol(lagjunk)-1)])
-junk <- merge(junk, leadjunk, by=c("index", "tid"), all.x=T)
-
-# create a series of dummy variable
-junk <- junk[,which(colnames(junk) %in% c("CodeType", "tid", "new_relations", "new_word", "new_pos", "new_source", "before_new_relations", "before_new_word", "before_new_pos", "before_new_source", "after_new_relations", "after_new_word", "after_new_pos", "after_new_source", "sentiment", "before_sentiment", "after_sentiment"))]
-sample <- data.frame(junk[, "new_word"])
-junk$new_word <- as.numeric(junk$new_word)
-junk$new_source <- as.numeric(junk$new_source)
-junk$before_new_word <- as.numeric(junk$before_new_word)
-junk$before_new_source <- as.numeric(junk$before_new_source)
-junk$after_new_word <- as.numeric(junk$after_new_word)
-junk$after_new_source <- as.numeric(junk$after_new_source)
-
-junk <- dummy_cols(junk, select_columns = c("new_word", "before_new_word", "after_new_word", "new_relations", "new_pos", "before_new_relations", "before_new_pos", "after_new_relations", "after_new_pos", "before_new_source", "after_new_source"))
-
-#colnames(junk)
-# drop the original factor variable
-junk <- junk[, -which(colnames(junk) %in% c("new_word", "new_source", "before_new_word", "tid", "sentiment", "before_sentiment", "after_sentiment", "before_new_words", "before_new_source", "after_new_word", "after_new_source", "new_relations", "new_pos", "before_new_relations", "before_new_pos", "after_new_relations", "after_new_pos"))]
-
-sample$CodeType <- junk$CodeType
-df <- junk
-df <- df[-which(df$CodeType == ""),]
-sample <- sample[-which(sample$CodeType == ""),]
-sample <- na.omit(sample)
-df <- na.omit(df)
-
-sample <- sample[rownames(df),]
-
-df$CodeType <- as.numeric(df$CodeType)
-df$CodeType <- df$CodeType -2
-sample$Code <- df$CodeType
+# as part of reading, convert back to factor
+sample[,1] <- factor( sample[,1] )
+sample$CodeType <- factor( sample$CodeType )
 
 # index <- createDataPartition(df$CodeType, p=0.85, list=FALSE)
 # final.training <- df[index,]
@@ -172,8 +108,6 @@ X_train_new <- cbind(X_train, train_probs)
 X_test_new <- cbind(X_test, test_probs)
 
 
-print("XXX")
-print( dim(sample))
 train_sample <- sample[1:floor(0.9*nrow(df)),]
 test_sample <- sample[ceiling(0.9*nrow(df)):nrow(df),]
 compare_data <- test_sample
@@ -186,7 +120,6 @@ compare_data$predicted_1st_round_label <- mapvalues(compare_data$predicted_1st_r
 
 
 myClasses <- as.matrix(table(compare_data$CodeType, compare_data$predicted_1st_round_label))
-myClasses <- myClasses[-1,]
 n <- sum(myClasses)
 nc <- nrow(myClasses)
 myDiag <- diag(myClasses)
