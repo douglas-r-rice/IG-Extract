@@ -1,0 +1,33 @@
+Running tutorial from 
+https://towardsdatascience.com/working-with-hugging-face-transformers-and-tf-2-0-89bf35e3555a
+and
+https://colab.research.google.com/github/jalammar/jalammar.github.io/blob/master/notebooks/bert/A_Visual_Notebook_to_Using_BERT_for_the_First_Time.ipynb#scrollTo=lnwgmqNG7i5l
+
+distilbert on 2K observations: 
+  accuracy of low 80%, 
+  runtime 13s
+  successful use of multiple cores (utilization ~600%)
+
+distilbert on all 7K observations: 
+  accuracy of low 80%, 
+  runtime 105s
+
+bert on 7k
+  accuracy of low-mid 80s%, 
+  runtime 203s (<4 mins)
+
+roberta on 2k
+  accurracy in the high 60s (!)
+  runtime less than 30s
+
+roberta on 7k
+  accurracy only in the low seventies (!)
+  runtime 214 (<4 mins)
+
+# TAKEAWAY
+Dataset is too small for roberta, which performs much worse on such a small
+dataset. Bert may offer a small improvement, at large cost in time, esp. as data get larger
+
+
+# calculating distances between embeddings, a common distance between two
+random sentences is about 4+-1
