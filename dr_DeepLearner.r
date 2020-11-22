@@ -29,8 +29,8 @@ use_boosting <- TRUE
 # load data
 ### df is the text features (tfidf?), but also the main thing that gets trained
 ### sample is actually the core data, with the text labels, but is only used at the end reporting accuracy etc
-sample <- read.csv( "step1_data_sample.csv")
-df <- read.csv( "step1_data_df.csv")
+sample <- read.csv( "data/step1_data_sample.csv")
+df <- read.csv( "data/step1_data_df.csv")
 
 # as part of reading, convert back to factor
 sample[,1] <- factor( sample[,1] )

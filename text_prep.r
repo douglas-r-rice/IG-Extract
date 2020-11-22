@@ -86,5 +86,5 @@ sample$CodeType <- as.character( sample$CodeType )
 ### sample is actually the core data
 ### df is the text features (tfidf?)
 
-write.csv(sample, "step1_data_sample.csv", row.names=FALSE)
-write.csv(df, "step1_data_df.csv", row.names=FALSE)
+write.csv(sample, "data/step1_data_sample.csv", row.names=FALSE)
+write.csv(df, "data/step1_data_df.csv", row.names=FALSE)
