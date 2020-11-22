@@ -29,5 +29,12 @@ Dataset is too small for roberta, which performs much worse on such a small
 dataset. Bert may offer a small improvement, at large cost in time, esp. as data get larger
 
 
-# calculating distances between embeddings, a common distance between two
-random sentences is about 4+-1
+# DISTANCES
+# calculating distances between embeddings, a common euclidean distance between two random sentences is about 4+-1
+#  BUT, the distance to use is cosine similarity
+#  over 0.9 is high.  
+#  strangely, in euclidean distaance, two adjacent words are very close even
+if very different in meaning. Suggests that the sentence is a trjectory
+through space: very enticing.  
+#  I was hoping to recreate the CLS (sentence level) embedding fromt he word
+embeddings, a sum or something, but couldn't
