@@ -1,11 +1,5 @@
 #! /bin/env python
 
-### sources incl
-### https://towardsdatascience.com/working-with-hugging-face-transformers-and-tf-2-0-89bf35e3555a
-### http://jalammar.github.io/a-visual-guide-to-using-bert-for-the-first-time/
-### mainly the latter
-### notebook version: https://colab.research.google.com/github/jalammar/jalammar.github.io/blob/master/notebooks/bert/A_Visual_Notebook_to_Using_BERT_for_the_First_Time.ipynb
-
 import numpy as np
 import pandas as pd
 from scipy.spatial.distance import cosine
@@ -19,24 +13,32 @@ import warnings
 warnings.filterwarnings('ignore')
 
 # Data
-df = pd.read_csv('data/train.tsv', delimiter='\t', header=None)
-df = df.append( pd.DataFrame(data=(("after stealing money from the bank vault, the bank robber was seen fishing on the Mississippi river bank.", 1),)), ignore_index=True)
-df = df.append( pd.DataFrame(data=(("after", 1),)), ignore_index=True)
-print(df.head())
-print(df.tail())
-print(df.shape)
-batch_1 = df[5000:].reset_index()
+print("Load data")
+df2 = pd.read_csv('data/train.tsv', delimiter='\t', header=None)
+
+df = pd.read_csv( "data/step1_data_sample.csv")
+df = df.rename(columns=dict(zip(df.columns,[0,1,2])))
+#print(df.shape)
+#batch_1 = df[:2000].reset_index()
+batch_1 = df
 batch_1[1].value_counts()
 
 # Pretrained model
+print("Load model")
 # For DistilBERT:
+print( "  Model: distilbert-base-uncased")
 model_class, tokenizer_class, pretrained_weights = (ppb.DistilBertModel, ppb.DistilBertTokenizer, 'distilbert-base-uncased')
 ## Want BERT instead of distilBERT? Uncomment the following line:
+#print( "  Model: bert-base-uncased")
 #model_class, tokenizer_class, pretrained_weights = (ppb.BertModel, ppb.BertTokenizer, 'bert-base-uncased')
+#print( "  Model: roberta-base")
+#model_class, tokenizer_class, pretrained_weights = (ppb.RobertaModel, ppb.RobertaTokenizer, 'roberta-base')
+
 # Load pretrained model/tokenizer
 tokenizer = tokenizer_class.from_pretrained(pretrained_weights)
 model = model_class.from_pretrained(pretrained_weights)
 
+print("Prep data")
 # Tokenization
 tokenized_raw = batch_1[0].apply((lambda x: tokenizer.tokenize(x)))
 tokenized = batch_1[0].apply((lambda x: tokenizer.encode(x, add_special_tokens=True)))
@@ -49,12 +51,13 @@ for i in tokenized.values:
 
 padded = np.array([i + [0]*(max_len-len(i)) for i in tokenized.values])
 
-np.array(padded).shape
+print("  check padding: ", np.array(padded).shape)
 
 # Masking
 attention_mask = np.where(padded != 0, 1, 0)
-attention_mask.shape
+print("  check mask:", attention_mask.shape)
 
+print("Get embeddings (this is the slow part seems)")
 # Querying the model
 input_ids = torch.tensor(padded)  
 attention_mask = torch.tensor(attention_mask)
@@ -62,15 +65,29 @@ attention_mask = torch.tensor(attention_mask)
 with torch.no_grad():
   last_hidden_states, hidden_states = model(input_ids, attention_mask=attention_mask, output_hidden_states=True)
 
-#features = last_hidden_states[0][:,0,:].numpy()
-features = np.concatenate((hidden_states[6].numpy(),
-                            hidden_states[5].numpy(),
-                            hidden_states[4].numpy(),
-                            hidden_states[3].numpy()),
-                            axis=2)
+if True: # get last layer
+  features = last_hidden_states[:,1,:].numpy()
+if False: # get second to last layer
+  features = hidden_states[-2][:,1,:].numpy()
+if False: # get last four layers
+  features = np.concatenate((hidden_states[6][:,1,:].numpy(),
+                            hidden_states[5][:,1,:].numpy(),
+                            hidden_states[4][:,1,:].numpy(),
+                            hidden_states[3][:,1,:].numpy()),
+                            axis=1)
+if False: # get last four layers plus sentence embedding, secodn to last
+  features = np.concatenate((hidden_states[5][:,0,:].numpy()),
+                            hidden_states[6][:,1,:].numpy(),
+                            hidden_states[5][:,1,:].numpy(),
+                            hidden_states[4][:,1,:].numpy(),
+                            hidden_states[3][:,1,:].numpy(),
+                            axis=1)
+# sanity check model output format
+assert( np.all(hidden_states[-1].numpy() == last_hidden_states[:,:,:].numpy()) )
 labels = batch_1[1]
 
-#iClassifier model 
+#Classifier model 
+print("Fit classifier")
 train_features, test_features, train_labels, test_labels = train_test_split(features, labels)
 
 # Optimizing regularization
@@ -81,18 +98,10 @@ train_features, test_features, train_labels, test_labels = train_test_split(feat
 # print('best parameters: ', grid_search.best_params_)
 # print('best scrores: ', grid_search.best_score_)
 
-# Fitting
-lr_clf = LogisticRegression()
-lr_clf.fit(train_features, train_labels)
+np.savetxt("data/step2_embedding_features.csv", features, delimiter=",", header=",".join(map(str,range(features.shape[1]))))
 
-# Evaluating
-lr_clf.score(test_features, test_labels)
-scores = cross_val_score(lr_clf, train_features, train_labels)
-print("Dummy classifier score: %0.3f (+/- %0.2f)" % (scores.mean(), scores.std() * 2))
+if False:
+  ## questions being asked.
+  ## Some of the single tokens from this dataset are being divided into nine fragments?  What's up?  Looks like date or section references:
+  tokenized_raw[[i for i,v in enumerate(attention_mask.numpy()) if all(v) ]]
 
-# Null model
-from sklearn.dummy import DummyClassifier
-clf = DummyClassifier()
-
-scores_null = cross_val_score(clf, test_features, test_labels)
-print("Dummy classifier score: %0.3f (+/- %0.2f)" % (scores_null.mean(), scores_null.std() * 2))
