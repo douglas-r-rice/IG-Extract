@@ -22,15 +22,18 @@ library(purrr)
 library(xgboost)
 library(keras)
 
-use_boosting <- FALSE
 use_boosting <- TRUE
+use_boosting <- FALSE
 #use_session_with_seed(2020)
 
 # load data
 ### df is the text features (tfidf?), but also the main thing that gets trained
 ### sample is actually the core data, with the text labels, but is only used at the end reporting accuracy etc
 sample <- read.csv( "data/step1_data_sample.csv")
+embeddings <- read.csv( "data/step2_embedding_features.csv")
 df <- read.csv( "data/step1_data_df.csv")
+df <- cbind(df, embeddings)
+#df <- cbind(CodeType=df[,1], embeddings)
 
 # as part of reading, convert back to factor
 sample[,1] <- factor( sample[,1] )
