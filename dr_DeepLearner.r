@@ -36,6 +36,7 @@ df <- cbind(df, embeddings)
 #df <- cbind(CodeType=df[,1], embeddings)
 
 # as part of reading, convert back to factor
+sample$sid_text <- NULL
 sample[,1] <- factor( sample[,1] )
 sample$CodeType <- factor( sample$CodeType )
 

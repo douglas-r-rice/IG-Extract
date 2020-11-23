@@ -38,3 +38,17 @@ if very different in meaning. Suggests that the sentence is a trjectory
 through space: very enticing.  
 #  I was hoping to recreate the CLS (sentence level) embedding fromt he word
 embeddings, a sum or something, but couldn't
+
+
+# EMBEDDING VARIATIONS
+Tried using last level, second to last level, all levels, all levels plus
+sentence-level.  nothing is an improvement on the basic.  Did confirm that
+sentence level embedding (CLS-token) for a single word sentence ofference
+nearly nothing.  I think they're all literally the same.
+
+also experimented with seeing if getting rid of tfidf tokens and just using
+bert, at clear expense of accuracy, would atleast improve signal on whether
+the variations matter at all.  They don't.
+
+next step is to reconstruct and rredecompose the sentences, generating
+embeddings at the original sentence level
