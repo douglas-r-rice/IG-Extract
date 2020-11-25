@@ -30,13 +30,18 @@ use_boosting <- FALSE
 ### df is the text features (tfidf?), but also the main thing that gets trained
 ### sample is actually the core data, with the text labels, but is only used at the end reporting accuracy etc
 sample <- read.csv( "data/step1_data_sample.csv")
-embeddings <- read.csv( "data/step2_embedding_features.csv")
+#embeddings <- read.csv( "data/step2_embedding_features.csv")
 df <- read.csv( "data/step1_data_df.csv")
-df <- cbind(df, embeddings)
+#print(c("data size:", dim(df), dim(embeddings)))
+#df <- cbind(df, embeddings)
+print(c("data size:", dim(sample), dim(df)))
+print(c("data head:", head(sample)))
 #df <- cbind(CodeType=df[,1], embeddings)
 
 # as part of reading, convert back to factor
 sample$sid_text <- NULL
+sample$sid <- NULL
+sample$tid <- NULL
 sample[,1] <- factor( sample[,1] )
 sample$CodeType <- factor( sample$CodeType )
 

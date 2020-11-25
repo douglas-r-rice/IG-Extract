@@ -52,3 +52,23 @@ the variations matter at all.  They don't.
 
 next step is to reconstruct and rredecompose the sentences, generating
 embeddings at the original sentence level
+
+
+### Trying to expand the data set from Doug's pass, which includes weird choices around when to omit NA's.  Before here were the statistics of the data:
+> table(df$CodeType)
+   0    1    2    3    4    5
+    444  437 2664  266 3289   36
+Accuracy with neural network  71.429
+Accuracy with neural network (w/out stop words) 71.122
+ F1: Aim Attribute Condition Deontic Object Orelse
+  F1: 0.057971 0.072727 0.39144 NaN 0.50216 NaN
+and after:
+> table(df$CodeType)
+   0    1    2    3    4    5
+    611  760 3458  373 4276   46
+Accuracy with neural network  58.972
+Accuracy with neural network (w/out stop words) 60.477
+ F1: Aim Attribute Condition Deontic Object
+  F1: 0.78049 0.47458 0.42403 0.91892 0.65034 1.3913
+
+
