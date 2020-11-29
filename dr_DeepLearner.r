@@ -21,6 +21,7 @@ library(caret)
 library(purrr)
 library(xgboost)
 library(keras)
+library(data.table)
 
 use_boosting <- TRUE
 use_boosting <- FALSE
@@ -29,13 +30,13 @@ use_boosting <- FALSE
 # load data
 ### df is the text features (tfidf?), but also the main thing that gets trained
 ### sample is actually the core data, with the text labels, but is only used at the end reporting accuracy etc
-sample <- read.csv( "data/step1_data_sample.csv")
-#embeddings <- read.csv( "data/step2_embedding_features.csv")
-df <- read.csv( "data/step1_data_df.csv")
-#print(c("data size:", dim(df), dim(embeddings)))
-#df <- cbind(df, embeddings)
-print(c("data size:", dim(sample), dim(df)))
-print(c("data head:", head(sample)))
+sample <- data.frame(fread( "data/step1_data_sample.csv"))
+embeddings <- data.frame(fread( "data/step2_embedding_features.csv"))
+df <- data.frame(fread( "data/step1_data_df.csv"))
+print(c("data size:", dim(df), dim(embeddings)))
+df <- cbind(df, embeddings)
+#print(c("data size:", dim(sample), dim(df)))
+#print(c("data head:", head(sample)))
 #df <- cbind(CodeType=df[,1], embeddings)
 
 # as part of reading, convert back to factor
