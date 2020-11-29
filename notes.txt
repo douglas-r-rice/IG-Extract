@@ -62,6 +62,12 @@ Accuracy with neural network  71.429
 Accuracy with neural network (w/out stop words) 71.122
  F1: Aim Attribute Condition Deontic Object Orelse
   F1: 0.057971 0.072727 0.39144 NaN 0.50216 NaN
+or
+Accuracy with neural network  73.297
+Accuracy with neural network (w/out stop words) 73.836
+ F1: Aim Attribute Condition Deontic Object Orelse
+  F1: 0.89076 0.58647 0.70191 0.96203 0.74155 0.4
+  
 and after:
 > table(df$CodeType)
    0    1    2    3    4    5
@@ -71,4 +77,76 @@ Accuracy with neural network (w/out stop words) 60.477
  F1: Aim Attribute Condition Deontic Object
   F1: 0.78049 0.47458 0.42403 0.91892 0.65034 1.3913
 
+and more after
+> table(df$CodeType)
+   0    1    2    3    4    5
+    611  760 3458  373 4276   46
+Accuracy with neural network  61.385
+Accuracy with neural network (w/out stop words) 64.062
+ F1: Aim Attribute Condition Deontic Object
+  F1: 0.78261 0.50435 0.49431 0.88571 0.66599 1.4754
+also
+Accuracy with neural network  61.805
+Accuracy with neural network (w/out stop words) 64.324
+ F1: Aim Attribute Condition Deontic Object
+  F1: 0.79646 0.52459 0.45174 0.85981 0.66987 1.4754
+Accuracy with xgboost using class probabilities  59.916
+Accuracy with xgboost using class probabilities ( w/out stop words ) 61.538
+ F1: Aim Attribute Condition Deontic Object Orelse
+  F1: 0.77193 0.528 0.49266 0.85981 0.63124 NaN
 
+OK!  finally, it was a weak detour rezipping the different tokenizations
+together, but not I have *contextual* bert embeddings (rather than isolated
+words) and there is a dramatic improvement.  word embeddings are finally all
+they're cracked up to be.
+and this is on the versio that was getting 60% accuracy, not doug's original
+wierdly smaller dataset that was getting 70% accuracy.  
+Accuracy with neural network  81.425
+Accuracy with neural network (w/out stop words) 81.606
+ F1: Aim Attribute Condition Deontic Object Orelse
+ F1: 0.87218 0.72868 0.7943 0.98701 0.82065 0.4
+Accuracy with xgboost using class probabilities  81.075
+Accuracy with xgboost using class probabilities ( w/out stop words ) 81.46
+ F1: Aim Attribute Condition Deontic Object Orelse
+ F1: 0.87879 0.72973 0.79692 0.97436 0.81259 0.4
+
+here are the bert features for the improved flow i introduced
+data/step25_hidden_states_20201129frey_less_filtering.pt
+
+ wow!  
+ Accuracy with neural network  89.252
+ Accuracy with neural network (w/out stop words) 89.327
+  F1: Aim Attribute Condition Deontic Object Orelse
+   F1: 0.83478 0.85714 0.89433 0.95775 0.90057 1
+that was from using the last four hidden layers plus the embedding for the
+whole sentence. 3840 embedding features, not just 768
+again:
+Accuracy with neural network  87.266
+Accuracy with neural network (w/out stop words) 87.592
+ F1: Aim Attribute Condition Deontic Object Orelse
+ F1: 0.85217 0.71186 0.88169 0.86667 0.89429 0.88889
+
+boosting.  is it any good?
+NO.  no performance improvements from boosting and big increase in time cost.
+
+removing the sentence level embedig: does that do much? (3072 embedding features)
+YES. It does a huge amount.  10% difference!
+
+shoudl I keep the presence/tfidf-like features from the original stretch,
+what does that do now?
+YES. those features still add a few %
+Accuracy with neural network  85.397
+Accuracy with neural network (w/out stop words) 83.92
+ F1: Aim Attribute Condition Deontic Object Orelse
+ F1: 0.77165 0.85 0.87218 0.59701 0.87683 0.90909
+
+what's the performance against doug's original baseline?
+ccuracy with neural network  86.353
+Accuracy with neural network (w/out stop words) 86.826
+ F1: Aim Attribute Condition Deontic Object Orelse
+ F1: 0.81481 0.7907 0.87087 0.91765 0.87179 0.8
+ (use data/step25_hidden_states20201129rice_orig_filtering.pt)
+
+
+what about adding tfidf?
+NOT DOING
