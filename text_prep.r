@@ -6,8 +6,9 @@ library(stringr)
 library(glue)
 library(dplyr)
 library(fastDummies)
-options(gsubfn.engine = "R") #from https://github.com/ggrothendieck/sqldf/blob/master/INSTALL
+options(gsubfn.engine = "R") #handles a subtle sqldf problem (from https://github.com/ggrothendieck/sqldf/blob/master/INSTALL )
 library(sqldf)
+library(data.table)
 library(assertthat)
 "%ni%" <- Negate("%in%")
 
