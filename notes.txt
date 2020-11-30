@@ -125,6 +125,11 @@ Accuracy with neural network  87.266
 Accuracy with neural network (w/out stop words) 87.592
  F1: Aim Attribute Condition Deontic Object Orelse
  F1: 0.85217 0.71186 0.88169 0.86667 0.89429 0.88889
+again:
+Accuracy with neural network  89.953
+Accuracy with neural network (w/out stop words) 90.086
+ F1: Aim Attribute Condition Deontic Object Orelse
+ F1: 0.84127 0.92647 0.90533 0.86486 0.90435 0.8
 
 boosting.  is it any good?
 NO.  no performance improvements from boosting and big increase in time cost.
