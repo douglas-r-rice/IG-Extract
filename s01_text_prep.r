@@ -1,7 +1,3 @@
-### TODO
-### convert binary presence features to tfidf?
-### tag bert on as well
-
 library(stringr)
 library(glue)
 library(dplyr)
@@ -20,7 +16,7 @@ num_files_input <- 19
 preserve_old_analysis <- FALSE
 
 # read in some sample data
-path = "fpc_files/fpc_{i}_with_code.csv"
+path = "data/fpc_files/fpc_{i}_with_code.csv"
 
 fpc1 <- data.frame()
 for (i in 1:num_files_input) {

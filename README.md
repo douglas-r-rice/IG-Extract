@@ -53,3 +53,14 @@ Accuracy with neural network (w/out stop words) 90.086
  F1: Aim Attribute Condition Deontic Object Orelse
  F1: 0.84127 0.92647 0.90533 0.86486 0.90435 0.8
 ```
+
+## Performance
+The BERT step drives all system requirements: space (10s of gigs), RAM (with some tricks and hacks I was able to get this to run on a 32GB RAM laptop without crashing python (distilbert-base-uncased, which might be as good as it gets without a proper ML machine). Step 2 is the slowest and takes about 30 mins with 6 cores. I don't know if default install is leveraging GPU or if this is all CPU by default, but I think the latter.
+
+
+## TODO
+* separate step2 into two scripts, one for prep and one for the fitting.
+* figure out use of GPU
+* include scripts that produce current fpc files
+* try switching current step 1 features for tfidf features. then upgrade that tfidf to bi-grams
+
