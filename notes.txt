@@ -146,6 +146,10 @@ Accuracy with neural network (w/out stop words) 86.826
  F1: Aim Attribute Condition Deontic Object Orelse
  F1: 0.81481 0.7907 0.87087 0.91765 0.87179 0.8
  (use data/step25_hidden_states20201129rice_orig_filtering.pt)
+Accuracy with xgboost using class probabilities  87.681
+Accuracy with xgboost using class probabilities ( w/out stop words ) 88.358
+ F1: Aim Attribute Condition Deontic Object Orelse
+ F1: 0.84404 0.82443 0.875 0.89552 0.89213 0.85714
 
 
 what about adding tfidf?
