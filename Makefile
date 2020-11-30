@@ -18,4 +18,5 @@ install:
 
 embedding_tutorial:
 	echo run mostly self-contained bert tutorial cribbed from net
+	echo pull train.tsv from link into data/
 	python -v embedding_features_tutorial.py
