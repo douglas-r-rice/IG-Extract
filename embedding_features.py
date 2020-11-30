@@ -15,7 +15,7 @@ warnings.filterwarnings('ignore')
 # Data
 print("Load data")
 df = pd.read_csv( "data/step1_data_sample.csv")
-df = df.rename(columns=dict(zip(df.columns,[0, "sid", "sid_text","tid","tid_base","tid_adjust",1,2])))
+df = df.rename(columns=dict(zip(df.columns,[0, "sid", "sid_text","tid",1,2])))
 #print(df.shape)
 #batch_1 = df[:2000].reset_index()
 ### clean up sentences to preempt tokenization problems
@@ -117,7 +117,7 @@ df = df.assign(bertid=-1)  # this is the value for mapping from a pre-labeled to
 for s in range(df.shape[0]):
   dep_feats = df.loc[s].values.tolist() # labeled token and its metadata
   sid = dep_feats[1]
-  tokid = dep_feats[4]
+  tokid = dep_feats[3]
   #print(dep_feats)
   tokspacy = dep_feats[2].split(' ') # "source" sentence from preprocessing
   tokbert = tokBertRepair(tokenized_raw[s].copy())
@@ -167,7 +167,7 @@ for s in range(df.shape[0]):
   else: # the two failures are tokens that made ti through as effectively empty strings (single hyphens). treat them as their preceding word .
     if not word:
       #print("GOT IN", sid, tokid, dep_feats[0])
-      df.at[s,'bertid']=df.loc[s-1].values.tolist()[4] + sum(tokmap[:(tokid)])
+      df.at[s,'bertid']=df.loc[s-1].values.tolist()[3] + sum(tokmap[:(tokid)])
       continue
     print(sid, word, tok_sent[match_word_idx], tokid, match_word_idx)
     print(sid, tokbert)
@@ -189,35 +189,16 @@ nfeats = hidden_states[0].shape[2]
 
 ### save costly output
 torch.save(hidden_states, "data/step25_hidden_states.pt")
+#torch.load("data/step25_hidden_states20201129rice_orig_filtering.pt")
+#torch.load("data/step25_hidden_states_20201129frey_less_filtering.pt)
 #torch.load("data/step25_hidden_states.pt")
 
 if False: # get last layer
   features = last_hidden_states[:,1,:].numpy()
-if False: # get second to last layer
-  features = hidden_states[-2][:,1,:].numpy()
-if False: # get last four layers
-  features = np.concatenate((hidden_states[6][:,1,:].numpy(),
-                            hidden_states[5][:,1,:].numpy(),
-                            hidden_states[4][:,1,:].numpy(),
-                            hidden_states[3][:,1,:].numpy()),
-                            axis=1)
-if False: # get last four layers plus sentence embedding, secodn to last
-  features = np.concatenate((hidden_states[5][:,0,:].numpy()),
-                            hidden_states[6][:,1,:].numpy(),
-                            hidden_states[5][:,1,:].numpy(),
-                            hidden_states[4][:,1,:].numpy(),
-                            hidden_states[3][:,1,:].numpy(),
-                            axis=1)
 if False: # get last layer, by word
   mask = torch.tensor([[[v,]*nfeats,] for v in df.bertid])
   features = torch.gather(hidden_states[6][:,:,:], 1, mask)
   ### get to right dimensionality and type
-  features  = features[:,0,:].numpy()
-  ### tested picking out with this line
-  ###  torch.gather(hidden_states[6][::50,:,0], 1, torch.tensor([[v%169,] for v in range(172)]))[-10:]
-if False: # get last layer, by word
-  mask = torch.tensor([[[v,]*nfeats,] for v in df.bertid])
-  features = torch.gather(hidden_states[5][:,:,:], 1, mask)
   features  = features[:,0,:].numpy()
   ### tested picking out with this line
   ###  torch.gather(hidden_states[6][::50,:,0], 1, torch.tensor([[v%169,] for v in range(172)]))[-10:]

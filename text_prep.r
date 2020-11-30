@@ -6,8 +6,8 @@ library(stringr)
 library(glue)
 library(dplyr)
 library(fastDummies)
-library(sqldf)
 options(gsubfn.engine = "R") #from https://github.com/ggrothendieck/sqldf/blob/master/INSTALL
+library(sqldf)
 library(assertthat)
 "%ni%" <- Negate("%in%")
 
@@ -44,7 +44,7 @@ sid_toolong = c( 26,  87, 117, 296, 446)
 #fpc1 = fpc1[df.sid.apply(lambda x : x not in sid_toolong)].reset_index(drop=True)
 fpc1 = subset(fpc1, sid %ni% sid_toolong)
 
-### redo to keep sid's consecutive
+### redo to keep sid's consecutive.  a cleaner approach would use different identifiers than sid to pick out the overlong sentences. i did the super simple inelegant thing
 ##3 slow but easy repair of sid (which in prior code is equal to 1 always --- not doing what it should.  can recover because tid is sound)
 l_tid = 0
 l_sid = 0
@@ -57,62 +57,6 @@ for (i in 1:nrow(fpc1)) {
 }
 
 
-### this is a now irrelevant part of aligning spacy tokenization here with bert tokenization later, for merging on those features 
-fpc1$tid_base <- fpc1$tid
-fpc1$tid_adjust <- 0
-if (!preserve_old_analysis) {
-    ### also repair tid's to remove them from discarded words
-    ### lots of checking here, pretty frustrating
-    l_tid <- 0
-    tids_skipped <- 0
-    l_sid <- -1
-    for (i in 1:nrow(fpc1)) {
-        #for (i in 1:200) {
-        #print( fpc1[i,])
-        ### detect that we're now at a new sentence.  If so, do some santiy checks and reset the token id trackers and increment the sid tracker
-        if (fpc1[i,"sid"] != l_sid) {
-            #print("in 1")
-            #print( c(i, l_sid, fpc1[i,"sid"], fpc1[i,"CodeType"], fpc1[i,"word"]))
-            #print( fpc1[i,"sid_text"])
-            # double check that my sid count is stable
-            assert_that(fpc1[i,"sid"] == l_sid + 1)
-            #print( c(i, l_tid, fpc1[i,"tid"], tids_skipped))
-            # check that the token id has just reset to 0
-            assert_that(fpc1[i,"tid"] == 0)
-            # also check that either token id has just reset to lower than it was at the end of the last sentence, or, in the case that the whole last sentence was skipped, that l_tid is still zero from it's last reset at the beginning of the last sentence (there are many wholly skipped sentences, confirmed in the if statement below)
-            assert_that((fpc1[i,"tid"] < l_tid) | (l_tid == 0))
-            if (l_tid == 0){
-                #print("in 2")
-                #print( "skipped sentence")
-                #print(i-1)
-                #print(fpc1[i-1,])
-            }
-            #print("")
-            l_sid <- l_sid + 1
-            l_tid <- 0
-            tids_skipped <- 0
-        }
-        if (fpc1[i,"CodeType"] == "") {
-            #print("in 3")
-            fpc1[i,"tid"] <- -1
-            fpc1[i,"tid_adjust"] <- -1
-            tids_skipped <- tids_skipped + 1
-        } else {
-            #print("in 4")
-            fpc1[i,"tid_adjust"] <- tids_skipped
-            fpc1[i,"tid"] <- fpc1[i,"tid"] - tids_skipped + 1
-            l_tid <- l_tid + 1
-        }
-        #print( c(i, l_sid, fpc1[i,"sid"]))
-        #print( c(i, l_tid, fpc1[i,"tid"], tids_skipped))
-        ### confirm either that my tid tracking is working or that this line was skipped
-        assert_that(l_tid == fpc1[i,"tid"] | fpc1[i,"tid"] == -1) 
-        ### confirm that the sid's still line up
-        assert_that(l_sid == fpc1[i,"sid"])
-        #print( fpc1[i,])
-        #print('')
-    }
-}
 # pull just the data we want
 fpc1$new_relations <- as.factor(fpc1$relation)
 fpc1$new_word <- as.factor(fpc1$word)
@@ -142,8 +86,6 @@ assert_that(length(fpc1$index) == length(unique(fpc1$index)))
 
 # create lag variables
 junktmp <- fpc1 
-junktmp$tid_base <- NULL
-junktmp$tid_adjust <- NULL
 junktmp$sid <- NULL
 junktmp$sid_text <- NULL
 assert_that(length(junktmp$index) == length(unique(junktmp$index)))
@@ -195,7 +137,7 @@ if (preserve_old_analysis) {
 df$CodeType <- as.numeric(df$CodeType)
 df$CodeType <- df$CodeType -2
 
-sample <- data.frame(fpc1[, c("new_word", "sid", "sid_text", "tid", "tid_base", "tid_adjust" )])
+sample <- data.frame(fpc1[, c("new_word", "sid", "sid_text", "tid")])
 sample$CodeType <- junk$CodeType
 sample <- sample[-which(sample$CodeType == ""),]
 if (preserve_old_analysis) {
